@@ -34,10 +34,10 @@ Performance-related issues:
 
 Desktop app issues:
 
-- `opencode web` command
+- `pandacli web` command
 - The desktop app itself
 
-**Only** add if it's specifically about the Desktop application or `opencode web` view. **Do not** add for terminal, TUI, or general opencode issues.
+**Only** add if it's specifically about the Desktop application or `pandacli web` view. **Do not** add for terminal, TUI, or general pandacli issues.
 
 #### nix
 
@@ -45,9 +45,9 @@ Desktop app issues:
 
 #### zen
 
-**Only** add if the issue mentions "zen" or "opencode zen" or "opencode black".
+**Only** add if the issue mentions "zen" or "pandacli zen" or "pandacli black".
 
-If the issue doesn't have "zen" or "opencode black" in it then don't add zen label
+If the issue doesn't have "zen" or "pandacli black" in it then don't add zen label
 
 #### docs
 
