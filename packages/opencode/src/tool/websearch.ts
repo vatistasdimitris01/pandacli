@@ -27,12 +27,10 @@ export const WebSearchTool = Tool.define("websearch", async () => {
   const now = new Date()
   const dateStr = now.toISOString().slice(0, 10)
   const timeStr = now.toISOString().slice(11, 19) + " UTC"
-  
+
   return {
     get description() {
-      return DESCRIPTION
-        .replace("{{date}}", dateStr)
-        .replace("{{time}}", timeStr)
+      return DESCRIPTION.replace("{{date}}", dateStr).replace("{{time}}", timeStr)
     },
     parameters: z.object({
       query: z.string().describe("Websearch query"),
@@ -82,11 +80,13 @@ export const WebSearchTool = Tool.define("websearch", async () => {
           }
         }
 
-        const results = data.items.map((item, index) => {
-          return `[${index + 1}] ${item.title}
+        const results = data.items
+          .map((item, index) => {
+            return `[${index + 1}] ${item.title}
 URL: ${item.link}
 ${item.snippet}`
-        }).join("\n\n")
+          })
+          .join("\n\n")
 
         return {
           output: `Found ${data.items.length} results for "${params.query}":\n\n${results}`,
@@ -94,80 +94,6 @@ ${item.snippet}`
           metadata: {
             totalResults: data.searchInformation?.totalResults || "unknown",
           },
-        }
-      } catch (error) {
-        clearTimeout(timeoutId)
-
-        if (error instanceof Error && error.name === "AbortError") {
-          throw new Error("Search request timed out")
-        }
-
-        throw error
-      }
-    },
-  }
-})
-
-      const searchRequest: McpSearchRequest = {
-        jsonrpc: "2.0",
-        id: 1,
-        method: "tools/call",
-        params: {
-          name: "web_search_exa",
-          arguments: {
-            query: params.query,
-            type: params.type || "auto",
-            numResults: params.numResults || API_CONFIG.DEFAULT_NUM_RESULTS,
-            livecrawl: params.livecrawl || "fallback",
-            contextMaxCharacters: params.contextMaxCharacters,
-          },
-        },
-      }
-
-      const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), 25000)
-
-      try {
-        const headers: Record<string, string> = {
-          accept: "application/json, text/event-stream",
-          "content-type": "application/json",
-        }
-
-        const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.SEARCH}`, {
-          method: "POST",
-          headers,
-          body: JSON.stringify(searchRequest),
-          signal: AbortSignal.any([controller.signal, ctx.abort]),
-        })
-
-        clearTimeout(timeoutId)
-
-        if (!response.ok) {
-          const errorText = await response.text()
-          throw new Error(`Search error (${response.status}): ${errorText}`)
-        }
-
-        const responseText = await response.text()
-
-        // Parse SSE response
-        const lines = responseText.split("\n")
-        for (const line of lines) {
-          if (line.startsWith("data: ")) {
-            const data: McpSearchResponse = JSON.parse(line.substring(6))
-            if (data.result && data.result.content && data.result.content.length > 0) {
-              return {
-                output: data.result.content[0].text,
-                title: `Web search: ${params.query}`,
-                metadata: {},
-              }
-            }
-          }
-        }
-
-        return {
-          output: "No search results found. Please try a different query.",
-          title: `Web search: ${params.query}`,
-          metadata: {},
         }
       } catch (error) {
         clearTimeout(timeoutId)
