@@ -7,6 +7,9 @@ import { cors } from "hono/cors"
 import { streamSSE } from "hono/streaming"
 import { proxy } from "hono/proxy"
 import { basicAuth } from "hono/basic-auth"
+import { serveStatic } from "hono/bun"
+import { fileURLToPath } from "url"
+import { dirname, join } from "path"
 import z from "zod"
 import { Provider } from "../provider/provider"
 import { NamedError } from "@opencode-ai/util/error"
@@ -504,26 +507,70 @@ export namespace Server {
           },
         )
         .all("/*", async (c) => {
-          const path = c.req.path
-          const response = await proxy(`https://app.opencode.ai${path}`, {
-            ...c.req,
-            headers: {
-              ...c.req.raw.headers,
-              host: "app.opencode.ai",
+          const appDistPath = join(
+            dirname(import.meta.url.replace("file://", "")),
+            "..",
+            "..",
+            "..",
+            "..",
+            "app",
+            "dist",
+          )
+
+          // Try to serve static files from app/dist
+          const staticFile = await serveStatic(c, {
+            root: appDistPath,
+            rewriteRequestPath: (path) => {
+              // Serve index.html for root path
+              if (path === "/") return "/index.html"
+              return path
             },
           })
-          if (Installation.isLocal()) {
-            response.headers.set(
-              "Content-Security-Policy",
-              "default-src 'self' 'unsafe-inline' 'unsafe-eval'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' http://localhost:* http://127.0.0.1:* ws://localhost:* wss://localhost:*",
-            )
-          } else {
-            response.headers.set(
-              "Content-Security-Policy",
-              "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self'",
-            )
-          }
-          return response
+
+          if (staticFile) return staticFile
+
+          // If no static file found, try to serve index.html for SPA routing
+          const indexHtml = await serveStatic(c, {
+            root: appDistPath,
+            path: "index.html",
+          })
+
+          if (indexHtml) return indexHtml
+
+          // If still no file, return a helpful error message
+          return c.html(
+            `<!DOCTYPE html>
+<html>
+<head>
+  <title>Pandacli Web UI</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; line-height: 1.6; }
+    h1 { color: #333; }
+    .error { background: #fee; border: 1px solid #fcc; padding: 15px; border-radius: 8px; margin: 20px 0; }
+    code { background: #f4f4f4; padding: 2px 6px; border-radius: 4px; }
+    pre { background: #f4f4f4; padding: 15px; border-radius: 8px; overflow-x: auto; }
+  </style>
+</head>
+<body>
+  <h1>🦊 Pandacli Web UI</h1>
+  <p>The web UI needs to be built first.</p>
+  <div class="error">
+    <strong>Error:</strong> App not found at <code>${appDistPath}</code>
+  </div>
+  <h2>To fix this, run:</h2>
+  <pre>cd packages/app
+bun run build</pre>
+  <p>Or for development mode:</p>
+  <pre>cd packages/app
+bun run dev</pre>
+  <p>Then access the web UI at <a href="http://localhost:3000">http://localhost:3000</a></p>
+</body>
+</html>`,
+            200,
+            {
+              "Content-Type": "text/html",
+            },
+          )
         }) as unknown as Hono,
   )
 
