@@ -1,17 +1,28 @@
 import z from "zod"
 import { EOL } from "os"
 import { NamedError } from "@opencode-ai/util/error"
+import { fileURLToPath } from "url"
+import { dirname, join } from "path"
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
+
+async function loadLogo(): Promise<string[][]> {
+  const leftPath = join(__dirname, "..", "..", "logo", "left.md")
+  const rightPath = join(__dirname, "..", "..", "logo", "right.md")
+
+  const left = await Bun.file(leftPath).text()
+  const right = await Bun.file(rightPath).text()
+
+  const leftLines = left.split("\n").filter((l) => l.length > 0)
+  const rightLines = right.split("\n").filter((l) => l.length > 0)
+
+  return leftLines.map((l, i) => [l, rightLines[i] ?? ""])
+}
+
+let LOGO_CACHE: string[][] | null = null
 
 export namespace UI {
-  const LOGO = [
-    [`                   `, `             ▄     `],
-    [`██████  ███████ ███████ ██  ██ `, `███████ ███████ ███████ ███████`],
-    [`██      ██      ██      ██  ██ `, `██      ██      ██      ██     `],
-    [`██      ██      ██      ██████ `, `██      ██      ██      ██     `],
-    [`██      ██      ██      ██  ██ `, `██      ██      ██      ██     `],
-    [`██████  ███████ ███████ ██  ██ `, `███████ ███████ ███████ ███████`],
-  ]
-
   export const CancelledError = NamedError.create("UICancelledError", z.void())
 
   export const Style = {
@@ -48,9 +59,12 @@ export namespace UI {
     blank = true
   }
 
-  export function logo(pad?: string) {
+  export async function logo(pad?: string) {
+    if (!LOGO_CACHE) {
+      LOGO_CACHE = await loadLogo()
+    }
     const result = []
-    for (const row of LOGO) {
+    for (const row of LOGO_CACHE) {
       if (pad) result.push(pad)
       result.push(Bun.color("gray", "ansi"))
       result.push(row[0])
