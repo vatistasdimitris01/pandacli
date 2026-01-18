@@ -1,4 +1,3 @@
-- To test opencode in `packages/opencode`, run `bun dev`.
-- To regenerate the JavaScript SDK, run `./packages/sdk/js/script/build.ts`.
+- To test pandacli in `packages/opencode`, run `bun dev`.
 - ALWAYS USE PARALLEL TOOLS WHEN APPLICABLE.
-- The default branch in this repo is `dev`.
+- The default branch in this repo is `main`.
