@@ -1,16 +1,16 @@
-- Search the web using Exa AI - performs real-time web searches and can scrape content from specific URLs
-- Provides up-to-date information for current events and recent data
-- Supports configurable result counts and returns the content from the most relevant websites
-- Use this tool for accessing information beyond knowledge cutoff
-- Searches are performed automatically within a single API call
+- Search the web using Google Custom Search API
+- Provides real-time web search results from Google's index
+- Returns title, URL, and snippet for each result
+- Use this tool for accessing current information and recent events
+- Maximum 10 results per search
 
 Usage notes:
-  - Supports live crawling modes: 'fallback' (backup if cached unavailable) or 'preferred' (prioritize live crawling)
-  - Search types: 'auto' (balanced), 'fast' (quick results), 'deep' (comprehensive search)
-  - Configurable context length for optimal LLM integration
-  - Domain filtering and advanced search options available
+  - Results are limited to 10 per search
+  - Results include title, URL, and snippet text
+  - Best for factual queries, current events, and finding specific web pages
+  - Results are ranked by Google's relevance algorithm
 
 Current date: {{date}} at {{time}}.
   - You MUST use the current year when searching for recent information or current events
-  - Example: If date is 2025-07-15 and user asks for "latest AI news", search for "AI news 2025", NOT "AI news 2024"
+  - Example: If date is 2025-01-18 and user asks for "latest AI news", search for "AI news 2025", NOT "AI news 2024"
   - For time-sensitive queries, include the current year prominently in your search query
