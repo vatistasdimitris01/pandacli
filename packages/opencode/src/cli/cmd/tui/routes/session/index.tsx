@@ -1100,6 +1100,16 @@ function AssistantMessage(props: { message: AssistantMessage; parts: Part[]; las
 
   return (
     <>
+      <Show when={props.last || final() || props.message.error?.name === "MessageAbortedError"}>
+        <text fg={theme.textMuted}>
+          {props.message.modelID}
+          <Show when={duration()}>
+            {" · "}
+            {Locale.duration(duration())}
+          </Show>
+          <Show when={props.message.error?.name === "MessageAbortedError"}>{" · interrupted"}</Show>
+        </text>
+      </Show>
       <For each={props.parts}>
         {(part, index) => {
           const component = createMemo(() => PART_MAPPING[part.type as keyof typeof PART_MAPPING])
@@ -1129,24 +1139,6 @@ function AssistantMessage(props: { message: AssistantMessage; parts: Part[]; las
           <text fg={theme.textMuted}>{props.message.error?.data.message}</text>
         </box>
       </Show>
-      <Switch>
-        <Match when={props.last || final() || props.message.error?.name === "MessageAbortedError"}>
-          <box paddingLeft={3} marginTop={1} flexDirection="column" gap={1}>
-            <text fg={theme.textMuted}>
-              {props.message.modelID}
-              <Show when={duration()}>
-                {" · "}
-                {Locale.duration(duration())}
-              </Show>
-              <Show when={props.message.error?.name === "MessageAbortedError"}>{" · interrupted"}</Show>
-            </text>
-            <text fg={theme.text}>
-              <span style={{ fg: local.agent.color(props.message.agent) }}>•</span>{" "}
-              {Locale.titlecase(props.message.mode)}
-            </text>
-          </box>
-        </Match>
-      </Switch>
     </>
   )
 }
@@ -1211,8 +1203,11 @@ function TextPart(props: { last: boolean; part: TextPart; message: AssistantMess
         border={["left"]}
         borderColor={local.agent.color(props.message.agent)}
       >
+        <text fg={theme.text}>
+          <span style={{ fg: local.agent.color(props.message.agent) }}>•</span>{" "}
+        </text>
         <code
-          paddingLeft={1}
+          paddingLeft={0}
           filetype="markdown"
           drawUnstyledText={false}
           streaming={true}
