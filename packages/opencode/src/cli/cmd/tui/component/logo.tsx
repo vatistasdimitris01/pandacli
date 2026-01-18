@@ -10,8 +10,8 @@ const __dirname = dirname(__filename)
 const SHADOW_MARKER = /[_^~]/
 
 async function loadLogoData(): Promise<{ left: string[]; right: string[] }> {
-  const leftPath = join(__dirname, "..", "..", "..", "..", "src", "logo", "left.md")
-  const rightPath = join(__dirname, "..", "..", "..", "..", "src", "logo", "right.md")
+  const leftPath = join(__dirname, "..", "..", "..", "..", "logo", "left.md")
+  const rightPath = join(__dirname, "..", "..", "..", "..", "logo", "right.md")
 
   const left = await Bun.file(leftPath).text()
   const right = await Bun.file(rightPath).text()
