@@ -517,60 +517,27 @@ export namespace Server {
             "dist",
           )
 
+          const path = c.req.path
+
           // Try to serve static files from app/dist
           const staticFile = await serveStatic(c, {
             root: appDistPath,
-            rewriteRequestPath: (path) => {
-              // Serve index.html for root path
-              if (path === "/") return "/index.html"
-              return path
-            },
           })
 
           if (staticFile) return staticFile
 
-          // If no static file found, try to serve index.html for SPA routing
-          const indexHtml = await serveStatic(c, {
-            root: appDistPath,
-            path: "index.html",
-          })
+          // For SPA routing, serve index.html for non-file requests
+          // Only serve index.html if the path doesn't look like a file (no extension)
+          if (!path.includes(".")) {
+            const indexHtml = await serveStatic(c, {
+              root: appDistPath,
+              path: "index.html",
+            })
+            if (indexHtml) return indexHtml
+          }
 
-          if (indexHtml) return indexHtml
-
-          // If still no file, return a helpful error message
-          return c.html(
-            `<!DOCTYPE html>
-<html>
-<head>
-  <title>Pandacli Web UI</title>
-  <style>
-    body { font-family: system-ui, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; line-height: 1.6; }
-    h1 { color: #333; }
-    .error { background: #fee; border: 1px solid #fcc; padding: 15px; border-radius: 8px; margin: 20px 0; }
-    code { background: #f4f4f4; padding: 2px 6px; border-radius: 4px; }
-    pre { background: #f4f4f4; padding: 15px; border-radius: 8px; overflow-x: auto; }
-  </style>
-</head>
-<body>
-  <h1>🦊 Pandacli Web UI</h1>
-  <p>The web UI needs to be built first.</p>
-  <div class="error">
-    <strong>Error:</strong> App not found at <code>${appDistPath}</code>
-  </div>
-  <h2>To fix this, run:</h2>
-  <pre>cd packages/app
-bun run build</pre>
-  <p>Or for development mode:</p>
-  <pre>cd packages/app
-bun run dev</pre>
-  <p>Then access the web UI at <a href="http://localhost:3000">http://localhost:3000</a></p>
-</body>
-</html>`,
-            200,
-            {
-              "Content-Type": "text/html",
-            },
-          )
+          // If file not found and not a SPA route, return 404
+          return c.text("Not Found", 404)
         }) as unknown as Hono,
   )
 
