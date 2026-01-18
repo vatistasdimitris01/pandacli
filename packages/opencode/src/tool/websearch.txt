@@ -10,5 +10,7 @@ Usage notes:
   - Configurable context length for optimal LLM integration
   - Domain filtering and advanced search options available
 
-Today's date is {{date}}. You MUST use this year when searching for recent information or current events
-- Example: If today is 2025-07-15 and the user asks for "latest AI news", search for "AI news 2025", NOT "AI news 2024"
+Current date: {{date}} at {{time}}.
+  - You MUST use the current year when searching for recent information or current events
+  - Example: If date is 2025-07-15 and user asks for "latest AI news", search for "AI news 2025", NOT "AI news 2024"
+  - For time-sensitive queries, include the current year prominently in your search query

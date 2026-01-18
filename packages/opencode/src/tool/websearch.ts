@@ -37,9 +37,13 @@ interface McpSearchResponse {
 }
 
 export const WebSearchTool = Tool.define("websearch", async () => {
+  const now = new Date()
+  const dateStr = now.toISOString().slice(0, 10)
+  const timeStr = now.toISOString().slice(11, 19) + " UTC"
+
   return {
     get description() {
-      return DESCRIPTION.replace("{{date}}", new Date().toISOString().slice(0, 10))
+      return DESCRIPTION.replace("{{date}}", dateStr).replace("{{time}}", timeStr)
     },
     parameters: z.object({
       query: z.string().describe("Websearch query"),

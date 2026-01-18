@@ -39,6 +39,7 @@ export namespace SystemPrompt {
 
   export async function environment() {
     const project = Instance.project
+    const now = new Date()
     return [
       [
         `Here is some useful information about the environment you are running in:`,
@@ -46,7 +47,8 @@ export namespace SystemPrompt {
         `  Working directory: ${Instance.directory}`,
         `  Is directory a git repo: ${project.vcs === "git" ? "yes" : "no"}`,
         `  Platform: ${process.platform}`,
-        `  Today's date: ${new Date().toDateString()}`,
+        `  Current date: ${now.toISOString().slice(0, 10)} (${now.toDateString()})`,
+        `  Current time: ${now.toISOString().slice(11, 19)} UTC`,
         `</env>`,
         `<files>`,
         `  ${
