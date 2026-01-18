@@ -1,0 +1,92 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "*"
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        include:
+          - os: ubuntu-latest
+            binary_name: pandacli-linux-amd64
+            target: bun-linux-x64
+          - os: macos-latest
+            binary_name: pandacli-darwin-amd64
+            target: bun-darwin-x64
+          - os: macos-latest
+            binary_name: pandacli-darwin-arm64
+            target: bun-darwin-arm64
+          - os: windows-latest
+            binary_name: pandacli-windows-amd64.exe
+            target: bun-windows-x64
+        exclude:
+          - os: macos-latest
+            binary_name: pandacli-linux-amd64
+          - os: macos-latest
+            binary_name: pandacli-windows-amd64.exe
+          - os: ubuntu-latest
+            binary_name: pandacli-darwin-amd64
+          - os: ubuntu-latest
+            binary_name: pandacli-darwin-arm64
+          - os: ubuntu-latest
+            binary_name: pandacli-windows-amd64.exe
+          - os: windows-latest
+            binary_name: pandacli-linux-amd64
+          - os: windows-latest
+            binary_name: pandacli-darwin-amd64
+          - os: windows-latest
+            binary_name: pandacli-darwin-arm64
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Build binary
+        run: |
+          bun build --target ${{ matrix.target }} --compile packages/opencode/bin/pandacli --outfile ${{ matrix.binary_name }}
+
+      - name: Make binary executable (Unix)
+        if: runner.os != 'Windows'
+        run: chmod +x ${{ matrix.binary_name }}
+
+      - name: Upload binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.binary_name }}
+          path: ${{ matrix.binary_name }}
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            artifacts/pandacli-linux-amd64/pandacli-linux-amd64
+            artifacts/pandacli-darwin-amd64/pandacli-darwin-amd64
+            artifacts/pandacli-darwin-arm64/pandacli-darwin-arm64
+            artifacts/pandacli-windows-amd64.exe/pandacli-windows-amd64.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

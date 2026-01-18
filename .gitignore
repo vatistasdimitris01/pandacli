@@ -1,0 +1,10 @@
+node_modules/
+*.log
+.env
+.env.local
+.DS_Store
+pandacli-*
+!.github/workflows/release.yml
+!.github/workflows/commit-and-push.yml
+!install.sh
+!commit-and-push.sh
