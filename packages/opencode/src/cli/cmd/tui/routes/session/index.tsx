@@ -1195,24 +1195,14 @@ function TextPart(props: { last: boolean; part: TextPart; message: AssistantMess
   const local = useLocal()
   return (
     <Show when={props.part.text.trim()}>
-      <box
-        id={"text-" + props.part.id}
-        paddingLeft={2}
-        marginTop={1}
-        flexShrink={0}
-        border={["left"]}
-        borderColor={local.agent.color(props.message.agent)}
-      >
-        <text fg={theme.text}>
-          <span style={{ fg: local.agent.color(props.message.agent) }}>•</span>{" "}
-        </text>
+      <box id={"text-" + props.part.id} paddingLeft={2} marginTop={1} flexShrink={0}>
         <code
           paddingLeft={0}
           filetype="markdown"
           drawUnstyledText={false}
           streaming={true}
           syntaxStyle={syntax()}
-          content={props.part.text.trim()}
+          content={"• " + props.part.text.trim()}
           conceal={ctx.conceal()}
           fg={theme.text}
         />
