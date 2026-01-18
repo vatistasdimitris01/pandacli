@@ -52,9 +52,9 @@ export const UninstallCommand = {
 
   handler: async (args: UninstallArgs) => {
     UI.empty()
-    UI.println(UI.logo("  "))
+    UI.println(await UI.logo("  "))
     UI.empty()
-    prompts.intro("Uninstall OpenCode")
+    prompts.intro("Uninstall Pandacli")
 
     const method = await Installation.method()
     prompts.log.info(`Installation method: ${method}`)

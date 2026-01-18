@@ -1,5 +1,5 @@
 import { TextAttributes, RGBA } from "@opentui/core"
-import { For, createSignal, type JSX } from "solid-js"
+import { For, createSignal, onMount, createResource, type JSX } from "solid-js"
 import { useTheme, tint } from "@tui/context/theme"
 import { fileURLToPath } from "url"
 import { dirname, join } from "path"
@@ -9,25 +9,22 @@ const __dirname = dirname(__filename)
 
 const SHADOW_MARKER = /[_^~]/
 
-const logoData = { left: [] as string[], right: [] as string[] }
+async function loadLogoData(): Promise<{ left: string[]; right: string[] }> {
+  const leftPath = join(__dirname, "..", "..", "..", "logo", "left.md")
+  const rightPath = join(__dirname, "..", "..", "..", "logo", "right.md")
 
-async function loadLogoData() {
-  if (logoData.left.length === 0) {
-    const leftPath = join(__dirname, "..", "..", "..", "logo", "left.md")
-    const rightPath = join(__dirname, "..", "..", "..", "logo", "right.md")
+  const left = await Bun.file(leftPath).text()
+  const right = await Bun.file(rightPath).text()
 
-    const left = await Bun.file(leftPath).text()
-    const right = await Bun.file(rightPath).text()
-
-    logoData.left = left.split("\n").filter((l) => l.length > 0)
-    logoData.right = right.split("\n").filter((l) => l.length > 0)
+  return {
+    left: left.split("\n").filter((l) => l.length > 0),
+    right: right.split("\n").filter((l) => l.length > 0),
   }
-  return logoData
 }
 
 export function Logo() {
   const { theme } = useTheme()
-  const logo = createSignal(logoData.left)
+  const [logo] = createResource(loadLogoData)
 
   const renderLine = (line: string, fg: RGBA, bold: boolean): JSX.Element[] => {
     const shadow = tint(theme.background, fg, 0.25)
@@ -89,11 +86,11 @@ export function Logo() {
 
   return (
     <box>
-      <For each={logoData.left}>
+      <For each={logo()?.left ?? []}>
         {(line, index) => (
           <box flexDirection="row" gap={1}>
             <box flexDirection="row">{renderLine(line, theme.textMuted, false)}</box>
-            <box flexDirection="row">{renderLine(logoData.right[index()], theme.text, true)}</box>
+            <box flexDirection="row">{renderLine(logo()?.right[index()] ?? "", theme.text, true)}</box>
           </box>
         )}
       </For>
